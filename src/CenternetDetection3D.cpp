@@ -162,6 +162,8 @@ bool CenternetDetection3D::init(const std::string& tensor_path, const int n_clas
     faceId.push_back({2,3,7,6});
     faceId.push_back({3,0,4,7});
     // ([[0,1,5,4], [1,2,6, 5], [2,3,7,6], [3,0,4,7]]);
+
+    return true;
 }
 
 void CenternetDetection3D::preprocess(cv::Mat &frame, const int bi){    
@@ -206,7 +208,7 @@ void CenternetDetection3D::preprocess(cv::Mat &frame, const int bi){
     }
     sz_old = sz;
 #ifdef OPENCV_CUDACONTRIB
-    std::cout<<"OPENCV CPMTROB\n";
+    std::cout<<"OPENCV CONTRIB\n";
     cv::cuda::GpuMat im_Orig; 
     cv::cuda::GpuMat imageF1_d, imageF2_d;
         
@@ -372,21 +374,21 @@ void CenternetDetection3D::postprocess(const int bi, const bool mAP) {
         new_pt1.at<float>(0,0)=static_cast<float>(trans2.at<double>(0,0))*xs[i] +
                                 static_cast<float>(trans2.at<double>(0,1))*ys[i] +
                                 static_cast<float>(trans2.at<double>(0,2))*1.0;
-        new_pt1.at<float>(0,1)=static_cast<float>(trans2.at<double>(1,0))*xs[i] +
+        new_pt1.at<float>(1,0)=static_cast<float>(trans2.at<double>(1,0))*xs[i] +
                                 static_cast<float>(trans2.at<double>(1,1))*ys[i] +
                                 static_cast<float>(trans2.at<double>(1,2))*1.0;
 
         new_pt2.at<float>(0,0)=static_cast<float>(trans2.at<double>(0,0))*wh[i] +
                                 static_cast<float>(trans2.at<double>(0,1))*wh[K+i] +
                                 static_cast<float>(trans2.at<double>(0,2))*1.0;
-        new_pt2.at<float>(0,1)=static_cast<float>(trans2.at<double>(1,0))*wh[i] +
+        new_pt2.at<float>(1,0)=static_cast<float>(trans2.at<double>(1,0))*wh[i] +
                                 static_cast<float>(trans2.at<double>(1,1))*wh[K+i] +
                                 static_cast<float>(trans2.at<double>(1,2))*1.0;
 
         target_coords[i*4] = new_pt1.at<float>(0,0);
-        target_coords[i*4+1] = new_pt1.at<float>(0,1);
+        target_coords[i*4+1] = new_pt1.at<float>(1,0);
         target_coords[i*4+2] = new_pt2.at<float>(0,0);
-        target_coords[i*4+3] = new_pt2.at<float>(0,1);
+        target_coords[i*4+3] = new_pt2.at<float>(1,0);
     }
     
     float alpha;

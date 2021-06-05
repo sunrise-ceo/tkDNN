@@ -17,6 +17,7 @@ bool CenterTrack::init(const std::string& tensor_path, const int n_classes, cons
     init_pre_inf();
     init_postprocessing();
     init_visualization(n_classes);
+    return true;
 }
 
 bool CenterTrack::init_preprocessing(){
@@ -40,7 +41,7 @@ bool CenterTrack::init_preprocessing(){
     }
     
 #ifdef OPENCV_CUDACONTRIB
-    std::cout<<"OPENCV CPMTROB\n";
+    std::cout<<"OPENCV CONTRIB\n";
     checkCuda( cudaMalloc(&mean_d, 3 * sizeof(float)) );
     checkCuda( cudaMalloc(&stddev_d, 3 * sizeof(float)) );
     float mean[3]   = {0.40789655, 0.44719303, 0.47026116};
@@ -49,7 +50,7 @@ bool CenterTrack::init_preprocessing(){
     checkCuda( cudaMemcpy(mean_d, mean, 3*sizeof(float), cudaMemcpyHostToDevice));
     checkCuda( cudaMemcpy(stddev_d, stddev, 3*sizeof(float), cudaMemcpyHostToDevice));
 #else
-    std::cout<<"NO OPENCV CPMTROB\n";
+    std::cout<<"NO OPENCV CONTRIB\n";
     checkCuda( cudaMallocHost(&input, sizeof(dnnType)*dim.tot() * nBatches));
     mean    << 0.40789655, 0.44719303, 0.47026116;
     stddev  << 0.2886383, 0.27408165, 0.27809834;
@@ -59,6 +60,8 @@ bool CenterTrack::init_preprocessing(){
     checkCuda( cudaMalloc(&input_d, sizeof(dnnType)*netRT->input_dim.tot() * nBatches));
     checkCuda( cudaMalloc(&input_pre_inf_d, sizeof(dnnType)*dim.tot()));
     checkCuda( cudaMalloc(&d_ptrs, dim.tot() * sizeof(float)) );
+
+    return true;
 }
 
 bool CenterTrack::init_pre_inf(){
@@ -202,6 +205,8 @@ bool CenterTrack::init_postprocessing(){
     trRes.resize(nBatches);
     countTr.resize(nBatches, 0);
     trackId.resize(nBatches, 0);
+
+    return true;
 }
 
 bool CenterTrack::init_visualization(const int n_classes){
@@ -274,6 +279,7 @@ bool CenterTrack::init_visualization(const int n_classes){
     faceId.push_back({3,0,4,7});
     faceId.push_back({2,3,7,6});
     // ([[0,1,5,4], [1,2,6, 5], [2,3,7,6], [3,0,4,7]]);
+    return true;
 }
 
 void CenterTrack::_get_additional_inputs(){
@@ -308,7 +314,7 @@ void CenterTrack::preprocess(cv::Mat &frame, const int bi){
         }
         
         float c[] = {new_width / 2.0f, new_height /2.0f};
-        float s[] = {dim.w, dim.h};
+        float s[] = {static_cast<float>(dim.w),static_cast<float>(dim.h)};
         // float s = new_width >= new_height ? new_width : new_height;
         // ----------- get_affine_transform
         // rot_rad = pi * 0 / 100 --> 0
@@ -407,34 +413,41 @@ void CenterTrack::preprocess(cv::Mat &frame, const int bi){
 cv::Mat CenterTrack::transform_preds_with_trans(float x1, float x2){
     cv::Mat target_coords(cv::Size(1,3), CV_32F);
     target_coords.at<float>(0,0) = x1;
-    target_coords.at<float>(0,1) = x2;
-    target_coords.at<float>(0,2) = 1.0;
+    target_coords.at<float>(1,0) = x2;
+    target_coords.at<float>(2,0) = 1.0;
     return transOut * target_coords;
 }
 
 void CenterTrack::tracking(const int bi) {
-    float item_size[countDet];
-    int item_cl[countDet];
-    float dets[2*countDet];
+    //float item_size[countDet];
+    //int item_cl[countDet];
+    //float dets[2*countDet];
+    std::vector<float> item_size(countDet);
+    std::vector<int> item_cl(countDet);
+    std::vector<float> dets(2*countDet);
     for(int i=0; i<countDet; i++){
         item_size[i] = (detRes[i].bb1.at<float>(0,0) - detRes[i].bb0.at<float>(0,0)) * 
-                       (detRes[i].bb1.at<float>(0,1) - detRes[i].bb0.at<float>(0,1));
+                       (detRes[i].bb1.at<float>(1,0) - detRes[i].bb0.at<float>(1,0));
         item_cl[i]   =  detRes[i].cl;
         dets[i*2]    =  detRes[i].ct.at<float>(0,0);
-        dets[i*2+1]  =  detRes[i].ct.at<float>(0,1);
+        dets[i*2+1]  =  detRes[i].ct.at<float>(1,0);
     }
     
-    float track_size[countTr[bi]];
-    int track_cl[countTr[bi]];
-    float tracks[2*countTr[bi]];
+    //float track_size[countTr[bi]];
+    //int track_cl[countTr[bi]];
+    //float tracks[2*countTr[bi]];
+    std::vector<float> track_size(countTr[bi]);
+    std::vector<int> track_cl(countTr[bi]);
+    std::vector<float> tracks(2*countTr[bi]);
     for(int i=0; i<countTr[bi]; i++){
         track_size[i] = (trRes[bi][i].det_res.bb1.at<float>(0,0) - trRes[bi][i].det_res.bb0.at<float>(0,0)) * 
-                        (trRes[bi][i].det_res.bb1.at<float>(0,1) - trRes[bi][i].det_res.bb0.at<float>(0,1));
+                        (trRes[bi][i].det_res.bb1.at<float>(1,0) - trRes[bi][i].det_res.bb0.at<float>(1,0));
         track_cl[i]   =  trRes[bi][i].det_res.cl;
         tracks[i*2]   =  trRes[bi][i].det_res.ct.at<float>(0,0);
-        tracks[i*2+1] =  trRes[bi][i].det_res.ct.at<float>(0,1);
+        tracks[i*2+1] =  trRes[bi][i].det_res.ct.at<float>(1,0);
     } 
-    float dist[countTr[bi]*countDet];
+    //float dist[countTr[bi]*countDet];
+    std::vector<float> dist(countTr[bi]*countDet);
     bool invalid;
     for(int i=0; i<countTr[bi]; i++){
         for(int j=0; j<countDet; j++){
@@ -446,7 +459,8 @@ void CenterTrack::tracking(const int bi) {
             dist[j*countTr[bi]+i] = dist[j*countTr[bi]+i] + invalid * (1 << 18);
         }
     }
-    int matched_indices[2*countTr[bi]];
+    //int matched_indices[2*countTr[bi]];
+    std::vector<int> matched_indices(2*countTr[bi]);
     float min_tr;
     int min_idtr = -1;
     for(int i=0; i<countTr[bi]; i++) {
@@ -469,10 +483,12 @@ void CenterTrack::tracking(const int bi) {
         }
     }
     
-    bool unmatched_dets[countDet];
+    //bool unmatched_dets[countDet];
+    std::vector<bool> unmatched_dets(countDet);
     for(int i=0; i<countDet; i++)
         unmatched_dets[i] = false;
-    bool unmatched_tracks[countTr[bi]];
+    //bool unmatched_tracks[countTr[bi]];
+    std::vector<bool> unmatched_tracks(countTr[bi]);
     for(int i=0; i<countTr[bi]; i++) 
         unmatched_tracks[i] = false;
     for(int i=0; i<countTr[bi]; i++) {
@@ -715,7 +731,7 @@ void CenterTrack::postprocess(const int bi, const bool mAP) {
         new_det_res.z = dep[i] - calibs[bi].at<float>(2,3);
         new_det_res.x = ((float)new_det_res.ct.at<float>(0,0) * dep[i] - calibs[bi].at<float>(0,3) - 
                         calibs[bi].at<float>(0,2) * new_det_res.z) / calibs[bi].at<float>(0,0);
-        new_det_res.y = ((float)new_det_res.ct.at<float>(0,1) * dep[i] - calibs[bi].at<float>(1,3) - 
+        new_det_res.y = ((float)new_det_res.ct.at<float>(1,0) * dep[i] - calibs[bi].at<float>(1,3) -
                         calibs[bi].at<float>(1,2) * new_det_res.z) / calibs[bi].at<float>(1,1) + (dim_[i] / 2);
         
         // alpha2rot_y
@@ -879,7 +895,7 @@ void CenterTrack::draw(std::vector<cv::Mat>& frames) {
                     cv::arrowedLine(frames[bi], 
                                 cv::Point((int)((bb0 + bb1)/2) * scale_x, (int)((bb2 + bb3)/2) * scale_y), 
                                 cv::Point((int)((bb0 + bb1)/2 + t.det_res.tr.at<float>(0,0)) * scale_x,
-                                          (int)((bb2 + bb3)/2 + t.det_res.tr.at<float>(0,1)) * scale_y),
+                                          (int)((bb2 + bb3)/2 + t.det_res.tr.at<float>(1,0)) * scale_y),
                                 cv::Scalar(255, 0, 255), 2);
                 }
             }
