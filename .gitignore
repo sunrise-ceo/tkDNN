@@ -13,6 +13,7 @@ build/
 *.pk
 *.table
 cmake-build-release/
+cmake-build-debug-clang-9/
 demo/COCO_val2017
 demo/BDD100K_val
 /.vs
