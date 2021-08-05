@@ -102,7 +102,7 @@ class SegmentationNN {
          */
 
         #ifdef SLAM_MODE
-        dnnType* postprocesss(const int bi=0,bool apply_colormap=true){
+        dnnType* postprocess(const int bi=0,bool apply_colormap=true){
             dnnType *rt_out = (dnnType *)netRT->buffersRT[1]+ netRT->buffersDIM[1].tot()*bi;
 
             dataDim_t odim = netRT->output_dim;
