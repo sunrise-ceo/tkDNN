@@ -102,7 +102,8 @@ class SegmentationNN {
          */
 
         #ifdef SLAM_MODE
-        dnnType* postprocess(const int bi=0,bool apply_colormap=true){
+        cv::Mat postprocess(const int bi=0,bool apply_colormap=true){
+            cv::Mat maskMatrix;
             dnnType *rt_out = (dnnType *)netRT->buffersRT[1]+ netRT->buffersDIM[1].tot()*bi;
 
             dataDim_t odim = netRT->output_dim;
@@ -125,8 +126,9 @@ class SegmentationNN {
             {
                 dataTemp = tmpOutData_h;
             }
-            dnnType* maskMatrix;
-            maskMatrix = dataTemp;
+            for(int i =0;i<vdim.c;i++){
+            maskMatrix = cv::Mat(originalSize[bi],CV_32FC1,dataTemp + vdim.h*vdim.c*i);
+            }
             cv::Mat colored;
 
             if(apply_colormap)
@@ -294,8 +296,9 @@ class SegmentationNN {
         }     
 
         #ifdef SLAM_MODE
-        float* updateOriginal(cv::Mat frame,bool apply_colormap=true){
+        cv::Mat updateOriginal(cv::Mat frame,bool apply_colormap=true){
             std::vector<cv::Mat> splitted_frames;
+            cv::Mat maskMatrix;
             int H, W, net_H, net_W;
             int top = 0, bottom = 0, left = 0, right = 0;
             std::vector<std::pair<int,int>> pos;
@@ -388,7 +391,7 @@ class SegmentationNN {
             dataDim_t odim = netRT->output_dim;
 
             std::vector<cv::Mat> out_img;
-            dnnType* maskMatrix;
+            std::vector<cv::Mat> out_mask;
 
             {
                 TKDNN_TSTART
@@ -413,9 +416,12 @@ class SegmentationNN {
                     {
                      dataTemp = tmpOutData_h;
                     }
-                    maskMatrix = dataTemp;
     
                     cv::Mat colored;
+                    for(int i=0;i<vdim.c;i++){
+                    out_mask.push_back(cv::Mat(cv::Size(odim.w,odim.h),CV_32FC1,dataTemp + dim.h*dim.c*i));
+                    }
+
 
                     if(apply_colormap)
                         colored = vizData2Mat(tmpOutData_h, vdim, netRT->input_dim.h, netRT->input_dim.w, 0, classes, classes);
@@ -430,12 +436,13 @@ class SegmentationNN {
                     }
                     }
 
-
+                cv::Mat tempMask(frame.size(), out_mask[0].type());
                 cv::Mat seg(frame.size(), out_img[0].type());
                 if(out_img.size() == 1)
                 {
                     cv::Rect roi(left, top, W, H);
                     seg = out_img[0](roi);
+                    tempMask = out_mask[0](roi);
                 }
                 else{
                     int bi=0;
@@ -444,17 +451,22 @@ class SegmentationNN {
 
                         for(int i=0; i<out_img.size(); ++i){
                             cv::Mat roi_collage = seg(cv::Rect( pos[i].first ,pos[i].second,out_img[i].cols,out_img[i].rows));
+                            cv::Mat roi_collage2 = tempMask(cv::Rect( pos[i].first ,pos[i].second,out_img[i].cols,out_img[i].rows));
+
                             out_img[i].copyTo(roi_collage);
+                            out_mask[i].copyTo(roi_collage2);
                         }
                     }
                     else{
                         FatalError("Not handled case")
                     }
                 }
+                maskMatrix = tempMask;
                 segmented[0] = seg;
                 
                 TKDNN_TSTOP
                 stats_post.push_back(t_ns);
+                
                 
             }
             return maskMatrix;
