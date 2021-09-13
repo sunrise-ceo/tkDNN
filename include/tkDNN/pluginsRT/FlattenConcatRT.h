@@ -1,3 +1,5 @@
+#ifndef _FLATTENCONCATRT_H
+#define _FLATTENCONCATRT_H
 #include<cassert>
 #include <NvInfer.h>
 #include <vector>
@@ -79,3 +81,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(FlattenConcatRTPluginCreator);
 };
+#endif

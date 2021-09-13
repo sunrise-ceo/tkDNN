@@ -99,7 +99,7 @@ IPluginV2 *UpsampleRT::clone() const NOEXCEPT {
 
 
 UpsampleRTPluginCreator::UpsampleRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("stride",nullptr,PluginFieldType::kINT32,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

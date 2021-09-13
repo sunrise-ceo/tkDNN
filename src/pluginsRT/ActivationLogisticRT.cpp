@@ -81,7 +81,7 @@ bool ActivationLogisticRT::supportsFormat(DataType type, PluginFormat format) co
 }
 
 IPluginV2* ActivationLogisticRT::clone() const NOEXCEPT {
-    auto *p = new ActivationLogisticRT();
+    ActivationLogisticRT *p = new ActivationLogisticRT();
     p->setPluginNamespace(mPluginNamespace.c_str());
     return p;
 }

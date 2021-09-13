@@ -13,7 +13,7 @@ namespace nvinfer1 {
     class YoloRT : public IPluginV2 {
 
     public:
-        YoloRT(int classes, int num, tk::dnn::Yolo *Yolo = nullptr, int n_masks = 3, float scale_xy = 1,
+        explicit YoloRT(int classes, int num, tk::dnn::Yolo *Yolo = nullptr, int n_masks = 3, float scale_xy = 1,
                float nms_thresh = 0.45, int nms_kind = 0, int new_coords = 0);
 
         YoloRT(const void *data, size_t length);

@@ -114,9 +114,7 @@ IPluginV2 *RegionRT::clone() const NOEXCEPT {
 
 
 RegionRTPluginCreator::RegionRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("classes",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("coords",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("num",nullptr,PluginFieldType::kINT32,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

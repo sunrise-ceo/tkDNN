@@ -86,7 +86,7 @@ void ActivationReLUCeiling::setPluginNamespace(const char *pluginNamespace) NOEX
 }
 
 ActivationReLUCeilingPluginCreator::ActivationReLUCeilingPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("ceiling", nullptr, PluginFieldType::kFLOAT32, 1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

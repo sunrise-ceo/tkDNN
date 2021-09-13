@@ -94,8 +94,7 @@ IPluginV2* ActivationLeakyRT::clone() const NOEXCEPT {
 }
 
 ActivationLeakyRTPluginCreator::ActivationLeakyRTPluginCreator() {
-    mPluginAttributes.emplace_back(
-            PluginField("slope", nullptr, PluginFieldType::kFLOAT32, 1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

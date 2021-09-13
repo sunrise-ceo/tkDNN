@@ -369,7 +369,20 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Pooling *l) {
 
     if(l->pool_mode == tkdnnPoolingMode_t::POOLING_MAX_FIXEDSIZE)
     {
-        IPluginV2 *plugin = new MaxPoolFixedSizeRT(l->output_dim.c, l->output_dim.h, l->output_dim.w, l->output_dim.n, l->strideH, l->strideW, l->winH, l->winH-1);
+        auto creator = getPluginRegistry()->getPluginCreator("MaxPoolingFixedSizeRT_tkDNN","1");
+        std::vector<PluginField> mPluginAttributes;
+        PluginFieldCollection mFC{};
+        mPluginAttributes.emplace_back(PluginField("c",&l->output_dim.c,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("h",&l->output_dim.h,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("w",&l->output_dim.w,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("n",&l->output_dim.n,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("stride_H",&l->strideH,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("stride_w",&l->strideW,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("winSize",&l->winH,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("padding",&l->winH-1,PluginFieldType::kINT32,1));
+        mFC.nbFields = mPluginAttributes.size();
+        mFC.fields = mPluginAttributes.data();
+        IPluginV2 *plugin = creator->createPlugin("MAX_POOLING",&mFC);
         IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
         checkNULL(lRT);
         return lRT;
@@ -414,19 +427,37 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Activation *l) {
         return lRT;
     }
     else if(l->act_mode == CUDNN_ACTIVATION_CLIPPED_RELU) {
-        IPluginV2 *plugin = new ActivationReLUCeiling(l->ceiling);
+        auto creator = getPluginRegistry()->getPluginCreator("ActivationReLUCeilingRT_tkDNN","1");
+        std::vector<PluginField> mPLuginAttributes;
+        PluginFieldCollection mFC{};
+        mPLuginAttributes.emplace_back(PluginField("ceiling",&l->ceiling,PluginFieldType::kINT32,1));
+        mFC.nbFields = mPLuginAttributes.size();
+        mFC.fields = mPLuginAttributes.data();
+        IPluginV2 *plugin = creator->createPlugin("ACTIVATION_LEAKY_RELU",&mFC);
         IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
         checkNULL(lRT);
         return lRT;
     } 
     else if(l->act_mode == ACTIVATION_MISH) {
-        IPluginV2 *plugin = new ActivationMishRT();
+        auto creator = getPluginRegistry()->getPluginCreator("ActivationMishRT_tkDNN","1");
+        std::vector<PluginField> mPluginAttributes;
+        PluginFieldCollection mFC{};
+        mPluginAttributes.clear();
+        mFC.nbFields = mPluginAttributes.size();
+        mFC.fields = mPluginAttributes.data();
+        IPluginV2 *plugin = creator->createPlugin("ACTIVATION_MISH",&mFC);
         IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
         checkNULL(lRT);
         return lRT;
     }
     else if(l->act_mode == ACTIVATION_LOGISTIC) {
-        IPluginV2 *plugin = new ActivationLogisticRT();
+        auto creator = getPluginRegistry()->getPluginCreator("ActivationLogisticRT_tkDNN","1");
+        std::vector<PluginField> mPluginAttributes;
+        PluginFieldCollection mFC{};
+        mPluginAttributes.clear();
+        mFC.nbFields = mPluginAttributes.size();
+        mFC.fields = mPluginAttributes.data();
+        IPluginV2 *plugin = creator->createPlugin("ACTIVATION_LOGISTIC",&mFC);
         IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
         checkNULL(lRT);
         return lRT;
@@ -461,7 +492,14 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Route *l) {
     }
 
     if(l->groups > 1){
-        IPluginV2 *plugin = new RouteRT(l->groups, l->group_id);
+        auto creator = getPluginRegistry()->getPluginCreator("RouteRT_tkDNN","1");
+        std::vector<PluginField> mPluginAttributes;
+        PluginFieldCollection mFC{};
+        mPluginAttributes.emplace_back(PluginField("groups",&l->groups,PluginFieldType::kINT32,1));
+        mPluginAttributes.emplace_back(PluginField("group_id",&l->group_id,PluginFieldType::kINT32,1));
+        mFC.nbFields = mPluginAttributes.size();
+        mFC.fields = mPluginAttributes.data();
+        IPluginV2 *plugin = creator->createPlugin("ROUTE_RT",&mFC);
         IPluginV2Layer *lRT = networkRT->addPluginV2(tens, l->layers_n, *plugin);
         checkNULL(lRT);
         return lRT;
@@ -472,8 +510,13 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Route *l) {
 }
 
 ILayer* NetworkRT::convert_layer(ITensor *input, Flatten *l) {
-
-    IPluginV2 *plugin = new FlattenConcatRT();
+    auto creator = getPluginRegistry()->getPluginCreator("FlattenConcatRT_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.clear();
+    mFC.nbFields = mPluginAttributes.size();
+    mFC.fields = mPluginAttributes.data();
+    IPluginV2 *plugin = creator->createPlugin("FLATTEN_CONCAT",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
@@ -481,8 +524,13 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Flatten *l) {
 
 ILayer* NetworkRT::convert_layer(ITensor *input, Reshape *l) {
     // std::cout<<"convert Reshape\n";
-
-    IPluginV2 *plugin = new ReshapeRT(l->output_dim);
+    auto creator = getPluginRegistry()->getPluginCreator("ReshapeRT_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.emplace_back(PluginField("new_dim",&l->output_dim,PluginFieldType::kUNKNOWN,1));
+    mFC.nbFields = mPluginAttributes.size();
+    mFC.fields = mPluginAttributes.data();
+    IPluginV2 *plugin = creator->createPlugin("RESHAPE_RT",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
@@ -503,7 +551,11 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Reorg *l) {
     //std::cout<<"convert Reorg\n";
 
     //std::cout<<"New plugin REORG\n";
-    IPluginV2 *plugin = new ReorgRT(l->stride);
+    auto creator = getPluginRegistry()->getPluginCreator("ReorgRT_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.emplace_back(PluginField("stride",&l->stride,PluginFieldType::kINT32,1));
+    IPluginV2 *plugin = creator->createPlugin("REORG",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
@@ -513,7 +565,15 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Region *l) {
     //std::cout<<"convert Region\n";
 
     //std::cout<<"New plugin REGION\n";
-    IPluginV2 *plugin = new RegionRT(l->classes, l->coords, l->num);
+    auto creator = getPluginRegistry()->getPluginCreator("RegionRT_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.emplace_back(PluginField("classes",&l->classes,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("coords",&l->coords,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("num",&l->num,PluginFieldType::kINT32,1));
+    mFC.nbFields = mPluginAttributes.size();
+    mFC.fields = mPluginAttributes.data();
+    IPluginV2 *plugin = creator->createPlugin("REGIONRT",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
@@ -535,7 +595,14 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Shortcut *l) {
     else
     {
         // plugin version
-        IPluginV2 *plugin = new ShortcutRT(l->backLayer->output_dim, l->mul);
+        auto creator = getPluginRegistry()->getPluginCreator("ShortcutRT_tkDNN","1");
+        std::vector<PluginField> mPluginAttributes;
+        PluginFieldCollection mFC{};
+        mPluginAttributes.emplace_back(PluginField("bDim",&l->backLayer->output_dim,PluginFieldType::kUNKNOWN,1));
+        mPluginAttributes.emplace_back(PluginField("mul",&l->mul,PluginFieldType::kUNKNOWN,1));
+        mFC.nbFields = mPluginAttributes.size();
+        mFC.fields = mPluginAttributes.data();
+        IPluginV2 *plugin = creator->createPlugin("SHORTCUT",&mFC);
         ITensor **inputs = new ITensor*[2];
         inputs[0] = input;
         inputs[1] = back_tens; 
@@ -549,7 +616,21 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Yolo *l) {
     //std::cout<<"convert Yolo\n";
 
     //std::cout<<"New plugin YOLO\n";
-    IPluginV2 *plugin = new YoloRT(l->classes, l->num, l, l->n_masks, l->scaleXY, l->nms_thresh, l->nsm_kind, l->new_coords);
+    auto creator = getPluginRegistry()->getPluginCreator("YoloRT_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    std::cout<<l->classes<<std::endl;
+    mPluginAttributes.emplace_back(PluginField("classes",&l->classes,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("num",&l->num,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("yolo",l,PluginFieldType::kUNKNOWN,1));
+    mPluginAttributes.emplace_back(PluginField("numMasks",&l->n_masks,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("scaleXY",&l->scaleXY,PluginFieldType::kFLOAT32,1));
+    mPluginAttributes.emplace_back(PluginField("nmsThresh",&l->nms_thresh,PluginFieldType::kFLOAT32,1));
+    mPluginAttributes.emplace_back(PluginField("nmsKind",&l->nsm_kind,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("newCoords",&l->new_coords,PluginFieldType::kINT32,1));
+    mFC.nbFields = mPluginAttributes.size();
+    mFC.fields = mPluginAttributes.data();
+    IPluginV2 *plugin = creator->createPlugin("YOLO_PLUGIN",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
@@ -558,8 +639,14 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Yolo *l) {
 ILayer* NetworkRT::convert_layer(ITensor *input, Upsample *l) {
     //std::cout<<"convert Upsample\n";
 
-    std::cout<<"New plugin UPSAMPLE\n";
-    IPluginV2 *plugin = new UpsampleRT(l->stride);
+    //std::cout<<"New plugin UPSAMPLE\n";
+    auto creator = getPluginRegistry()->getPluginCreator("Upsample_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.emplace_back(PluginField("stride",&l->stride,PluginFieldType::kINT32,1));
+    mFC.nbFields = mPluginAttributes.size();
+    mFC.fields = mPluginAttributes.data();
+    IPluginV2 *plugin = creator->createPlugin("UPSAMPLE_LAYER",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
@@ -575,9 +662,28 @@ ILayer* NetworkRT::convert_layer(ITensor *input, DeformConv2d *l) {
     inputs[1] = preconv->getOutput(0);
 
     //std::cout<<"New plugin DEFORMABLE\n";
-    IPluginV2 *plugin = new DeformableConvRT(l->chunk_dim, l->kernelH, l->kernelW, l->strideH, l->strideW, l->paddingH, l->paddingW,
-                                            l->deformableGroup, l->input_dim.n, l->input_dim.c, l->input_dim.h, l->input_dim.w, 
-                                            l->output_dim.n, l->output_dim.c, l->output_dim.h, l->output_dim.w, l);
+    auto creator = getPluginRegistry()->getPluginCreator("DeformableConvRT_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.emplace_back(PluginField("chunk_dum",&l->chunk_dim,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("kh",&l->kernelH,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("kc",&l->kernelW,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->strideH,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->strideW,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->paddingH,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->paddingW,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->deformableGroup,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->input_dim.n,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->input_dim.c,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->input_dim.h,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->input_dim.w,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->output_dim.n,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->output_dim.c,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->output_dim.h,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("sh",&l->output_dim.w,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("defRT",l,PluginFieldType::kUNKNOWN,1));
+
+    IPluginV2 *plugin = creator->createPlugin("DEFORMABLE_RT",&mFC);
     IPluginV2Layer *lRT = networkRT->addPluginV2(inputs, 2, *plugin);
     checkNULL(lRT);
     lRT->setName( ("Deformable" + std::to_string(l->id)).c_str() );

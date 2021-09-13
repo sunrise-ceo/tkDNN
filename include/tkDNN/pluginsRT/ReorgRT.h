@@ -1,3 +1,5 @@
+#ifndef _REORGRT_H
+#define _REORGRT_H
 #include<cassert>
 #include "../kernels.h"
 #include <NvInfer.h>
@@ -80,4 +82,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(ReorgRTPluginCreator);
 };
-
+#endif

@@ -1,3 +1,5 @@
+#ifndef _MAXPOOLINGFIXEDSIZE_RT
+#define _MAXPOOLINGFIXEDSIZE_RT
 #include<cassert>
 #include "../kernels.h"
 #include <NvInfer.h>
@@ -87,3 +89,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(MaxPoolFixedSizeRTPluginCreator);
 };
+#endif

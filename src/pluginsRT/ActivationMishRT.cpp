@@ -75,7 +75,7 @@ void ActivationMishRT::setPluginNamespace(const char *plguinNamespace) NOEXCEPT 
 }
 
 IPluginV2 *ActivationMishRT::clone() const NOEXCEPT {
-    auto *p = new ActivationMishRT();
+    ActivationMishRT *p = new ActivationMishRT();
     p->setPluginNamespace(mPluginNamespace.c_str());
     return p;
 }

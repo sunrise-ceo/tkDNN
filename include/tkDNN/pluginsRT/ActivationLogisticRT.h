@@ -1,3 +1,5 @@
+#ifndef _ACTIVATIONLOGISTICRT_H
+#define _ACTIVATIONLOGISTICRT_H
 #include<cassert>
 #include "../kernels.h"
 #include <NvInfer.h>
@@ -81,3 +83,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(ActivationLogisticRTPluginCreator);
 };
+#endif

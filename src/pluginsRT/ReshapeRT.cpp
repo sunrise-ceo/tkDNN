@@ -98,7 +98,7 @@ IPluginV2 *ReshapeRT::clone() const NOEXCEPT {
 
 
 ReshapeRTPluginCreator::ReshapeRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("new_dim",nullptr,PluginFieldType::kUNKNOWN,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

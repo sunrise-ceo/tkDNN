@@ -1,3 +1,5 @@
+#ifndef _ACTIVATIONMISHRT_H
+#define _ACTIVATIONMISHRT_H
 #include<cassert>
 #include "../kernels.h"
 #include <NvInfer.h>
@@ -77,3 +79,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(ActivationMishRTPluginCreator);
 };
+#endif

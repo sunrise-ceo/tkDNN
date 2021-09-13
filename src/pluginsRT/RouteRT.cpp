@@ -126,8 +126,7 @@ IPluginV2 *RouteRT::clone() const NOEXCEPT {
 
 
 RouteRTPluginCreator::RouteRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("groups",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("group_id",nullptr,PluginFieldType::kINT32,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

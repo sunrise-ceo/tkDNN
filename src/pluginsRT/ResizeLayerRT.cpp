@@ -103,9 +103,7 @@ IPluginV2 *ResizeLayerRT::clone() const NOEXCEPT {
 
 
 ResizeLayerRTPluginCreator::ResizeLayerRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("o_c",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("o_h",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("o_w",nullptr,PluginFieldType::kINT32,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

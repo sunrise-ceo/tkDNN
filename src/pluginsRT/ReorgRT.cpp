@@ -95,7 +95,7 @@ IPluginV2 *ReorgRT::clone() const NOEXCEPT {
 
 
 ReorgRTPluginCreator::ReorgRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("stride",nullptr,PluginFieldType::kINT32,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

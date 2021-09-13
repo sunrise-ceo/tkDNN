@@ -1,3 +1,5 @@
+#ifndef _ACTIVATIONRELUCEILINGRT_H
+#define _ACTIVATIONRELUCEILINGRT_H
 #include<cassert>
 #include "../kernels.h"
 #include <NvInfer.h>
@@ -76,3 +78,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(ActivationReLUCeilingPluginCreator);
 };
+#endif

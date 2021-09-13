@@ -1,3 +1,5 @@
+#ifndef _ACTIVATIONLEAKYRT_H
+#define _ACTIVATIONLEAKYRT_H
 #include "NvInfer.h"
 #include "../kernels.h"
 #include <cassert>
@@ -79,6 +81,6 @@ namespace nvinfer1 {
         std::string mPluginNamespace;
     };
 
-
     REGISTER_TENSORRT_PLUGIN(ActivationLeakyRTPluginCreator);
 };
+#endif

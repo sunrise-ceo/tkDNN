@@ -1,3 +1,5 @@
+#ifndef _ROUTERT_H
+#define _ROUTERT_H
 #include<cassert>
 #include "../kernels.h"
 #include <vector>
@@ -84,3 +86,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(RouteRTPluginCreator);
 };
+#endif

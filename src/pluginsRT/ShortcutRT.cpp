@@ -110,8 +110,7 @@ IPluginV2 *ShortcutRT::clone() const NOEXCEPT {
 
 
 ShortcutRTPluginCreator::ShortcutRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("bDim",nullptr,PluginFieldType::kUNKNOWN,1));
-    mPluginAttributes.emplace_back(PluginField("mul",nullptr,PluginFieldType::kUNKNOWN,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

@@ -253,23 +253,7 @@ IPluginV2 *DeformableConvRT::clone() const NOEXCEPT {
 
 
 DeformableConvRTPluginCreator::DeformableConvRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("chunk_dim",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("kh",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("kw",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("sh",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("sw",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("ph",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("pw",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("deformableGroup",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("i_n",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("i_c",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("i_h",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("i_w",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("o_n",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("o_c",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("o_h",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("o_w",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("defRT",nullptr,PluginFieldType::kUNKNOWN,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

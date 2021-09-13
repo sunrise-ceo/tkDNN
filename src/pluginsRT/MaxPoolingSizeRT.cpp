@@ -112,14 +112,7 @@ IPluginV2 *MaxPoolFixedSizeRT::clone() const NOEXCEPT {
 
 
 MaxPoolFixedSizeRTPluginCreator::MaxPoolFixedSizeRTPluginCreator() {
-    mPluginAttributes.emplace_back(PluginField("c",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("h",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("w",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("n",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("stride_H",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("stride_W",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("winSize",nullptr,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("padding",nullptr,PluginFieldType::kINT32,1));
+    mPluginAttributes.clear();
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
 }

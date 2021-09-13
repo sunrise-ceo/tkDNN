@@ -1,3 +1,5 @@
+#ifndef _RESIZELAYERRT_H
+#define _RESIZELAYERRT_H
 #include<cassert>
 #include "../kernels.h"
 #include <NvInfer.h>
@@ -84,4 +86,4 @@ namespace nvinfer1 {
 
     REGISTER_TENSORRT_PLUGIN(ResizeLayerRTPluginCreator);
 };
-
+#endif
