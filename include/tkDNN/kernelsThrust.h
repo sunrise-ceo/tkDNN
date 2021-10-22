@@ -1,6 +1,6 @@
 #ifndef KERNELSTHRUST_H
 #define KERNELSTHRUST_H
-
+#define STEREO_SCALE_FACTOR 5.4
 
 #include <thrust/extrema.h>
 #include <thrust/sort.h>
@@ -42,5 +42,8 @@ void bboxes(int * ids_begin, const int K, const int size, float *xs_begin, float
 void getRecordsFromTopKId(int * ids_begin, const int K, const int ch, const int size, dnnType *src_begin, float *src_out, int *ids_out);
 
 void maxElem(dnnType *src_begin, dnnType *dst_begin, const int c, const int h, const int w);
+
+void metricDepth(dnnType *src,dnnType *dst,int64_t min_depth,int64_t max_depth,int64_t c,int64_t h,int64_t w);
+
 
 #endif //KERNELSTHRUST_H

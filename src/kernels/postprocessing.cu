@@ -45,18 +45,17 @@ void maxElem_kernel(float *src_begin, float *dst_begin, const int n_classes, con
     int i = blockDim.x*blockIdx.x + threadIdx.x;
     if (i > size)
         return;
-
     thrust::device_ptr<float> dPbeg ( &src_begin[i*n_classes] ) ;
     thrust::device_ptr<float> dPend = dPbeg + n_classes;
     thrust::device_ptr<float> result = thrust::max_element(thrust::device,dPbeg, dPend);
-
     dst_begin[i] = result - dPbeg;
 }
 
 void maxElem(dnnType *src_begin, dnnType *dst_begin, const int c, const int h, const int w){
     int blocks = (h*w)/32+1;
     int threads = 32;
-    maxElem_kernel<<<blocks, threads, 0>>>(src_begin, dst_begin, c, h*w);   
+    cudaDeviceSetLimit(cudaLimitMallocHeapSize, 1024*1024*32);
+    maxElem_kernel<<<blocks, threads, 0>>>(src_begin, dst_begin, c, h*w);
 }
 
 void topKxyclasses(int *ids_begin, int *ids_end, const int K, const int size, const int wh, int *clses, int *xs, int *ys){    
@@ -101,4 +100,24 @@ void bboxes(int * ids_begin, const int K, const int size, float *xs_begin, float
     // y1
     thrust::transform(thrust::device, ys_begin, ys_begin + K, src_out, bby1, thrust::plus<float>());
 }
+
+__global__
+void metricDepth(dnnType *srcData,dnnType *dstData,int64_t min_depth,int64_t max_depth,int size){
+    int i = blockDim.x*blockIdx.x + threadIdx.x;
+    if(i > size){
+        return;
+    }
+    int min_disp = 1/max_depth;
+    int max_disp = 1/ min_depth;
+    dstData[i] = min_disp + (max_disp - min_disp)*srcData[i]*STEREO_SCALE_FACTOR;
+}
+
+void metricDepth(dnnType *src,dnnType *dst,int64_t min_depth,int64_t max_depth,int64_t c,int64_t h,int64_t w){
+    int blocks = (h*w)/32 +1 ;
+    int threads = 32;
+    metricDepth<<<blocks,threads,0>>>(src,dst,min_depth,max_depth,h*w);
+}
+
+
+
 
