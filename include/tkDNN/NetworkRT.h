@@ -39,6 +39,7 @@ using namespace nvinfer1;
 #include "pluginsRT/FlattenConcatRT.h"
 #include "pluginsRT/ReshapeRT.h"
 #include "pluginsRT/MaxPoolingFixedSizeRT.h"
+#include "pluginsRT/ReflectionPadding2DRT.h"
 
 class PluginFactory : IPluginFactory
 {
@@ -115,6 +116,7 @@ public:
     nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input, Yolo *l);
     nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input, Upsample *l);
     nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input, DeformConv2d *l);
+    nvinfer1::ILayer* convert_layer(nvinfer1::ITensor* input, ReflectionPAD2D* l);
 
     bool serialize(const char *filename);
     bool deserialize(const char *filename);

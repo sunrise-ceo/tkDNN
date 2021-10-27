@@ -251,6 +251,8 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Layer *l) {
         return convert_layer(input, (Upsample*) l);
     if(type == LAYER_DEFORMCONV2D)
         return convert_layer(input, (DeformConv2d*) l);
+    if (type == LAYER_REFLECTION_PAD_2D)
+        return convert_layer(input, (ReflectionPAD2D*)l);
 
     std::cout<<l->getLayerName()<<"\n";
     FatalError("Layer not implemented in tensorRT");
@@ -615,6 +617,13 @@ ILayer* NetworkRT::convert_layer(ITensor *input, DeformConv2d *l) {
     return lRT3;
 }
 
+ILayer* NetworkRT::convert_layer(ITensor* input, ReflectionPAD2D* l) {
+    IPlugin* plugin = new ReflectionPadding2DRT(l->pad);
+    IPluginLayer* lRT = networkRT->addPlugin(&input, 1, *plugin);
+    checkNULL(lRT);
+    return lRT;
+}
+
 bool NetworkRT::serialize(const char *filename) {
 
     std::ofstream p(filename, std::ios::binary);
@@ -826,6 +835,21 @@ IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialDa
         assert(buf == bufCheck + serialLength);
         return r;
     } 
+
+    if (name.find("ReflectionPAD2D") == 0) {
+        int64_t pad_temp = readBUF<int64_t>(buf);
+        ReflectionPadding2DRT* r = new ReflectionPadding2DRT(pad_temp);
+        for (int i = 0; i < 4; i++) {
+            auto temp_var = readBUF<int64_t>(buf);
+            r->pad_lrtb[i] = temp_var;
+        }
+        r->input_h = readBUF<int64_t>(buf);
+        r->input_w = readBUF<int64_t>(buf);
+        r->batch = readBUF<int64_t>(buf);
+        r->c = readBUF<int64_t>(buf);
+        assert(buf == bufCheck + serialLength);
+        return r;
+    }
 
     if(name.find("Route") == 0) {
         int groupsTemp = readBUF<int>(buf);

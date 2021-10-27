@@ -48,4 +48,7 @@ void dcnV2CudaForward(cublasStatus_t stat, cublasHandle_t handle,
                          const int dst_dim, cudaStream_t stream = cudaStream_t(0));
 
 void scalAdd(dnnType* dstData, int size, float alpha, float beta, int inc, cudaStream_t stream = cudaStream_t(0));
+
+void reflection_pad2d_out_forward(int64_t padding[4], float* srcData, float* dstData, int64_t input_h, int64_t input_w, int64_t plane_dim, int64_t n_batch, cudaStream_t cudaStream = cudaStream_t(0));
+
 #endif //KERNELS_H

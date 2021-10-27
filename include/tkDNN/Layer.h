@@ -8,30 +8,31 @@
 
 namespace tk { namespace dnn {
 
-enum layerType_t {
-    LAYER_INPUT,
-    LAYER_DENSE,
-    LAYER_CONV2D,
-    LAYER_DECONV2D,
-    LAYER_DEFORMCONV2D,
-    LAYER_LSTM,
-    LAYER_ACTIVATION,
-    LAYER_ACTIVATION_CRELU,
-    LAYER_ACTIVATION_LEAKY,
-    LAYER_ACTIVATION_MISH,
-    LAYER_ACTIVATION_LOGISTIC,
-    LAYER_FLATTEN,
-    LAYER_RESHAPE,
-    LAYER_RESIZE,
-    LAYER_MULADD,
-    LAYER_POOLING,
-    LAYER_SOFTMAX,
-    LAYER_ROUTE,
-    LAYER_REORG,
-    LAYER_SHORTCUT,
-    LAYER_UPSAMPLE,
-    LAYER_REGION,
-    LAYER_YOLO
+    enum layerType_t {
+        LAYER_INPUT,
+        LAYER_DENSE,
+        LAYER_CONV2D,
+        LAYER_DECONV2D,
+        LAYER_DEFORMCONV2D,
+        LAYER_LSTM,
+        LAYER_ACTIVATION,
+        LAYER_ACTIVATION_CRELU,
+        LAYER_ACTIVATION_LEAKY,
+        LAYER_ACTIVATION_MISH,
+        LAYER_ACTIVATION_LOGISTIC,
+        LAYER_FLATTEN,
+        LAYER_RESHAPE,
+        LAYER_RESIZE,
+        LAYER_MULADD,
+        LAYER_POOLING,
+        LAYER_SOFTMAX,
+        LAYER_ROUTE,
+        LAYER_REORG,
+        LAYER_SHORTCUT,
+        LAYER_UPSAMPLE,
+        LAYER_REGION,
+        LAYER_YOLO,
+        LAYER_REFLECTION_PAD_2D
 };
 
 #define TKDNN_BN_MIN_EPSILON 1e-5
@@ -87,6 +88,7 @@ public:
             case LAYER_UPSAMPLE:            return "Upsample";
             case LAYER_REGION:              return "Region";
             case LAYER_YOLO:                return "Yolo";
+            case LAYER_REFLECTION_PAD_2D:   return "ReflectionPAD2D";
             default:                        return "unknown";
         }
     }
@@ -602,6 +604,18 @@ public:
 
     int stride;
     bool reverse;
+};
+
+
+class ReflectionPAD2D : public Layer {
+public:
+    ReflectionPAD2D(Network* net, int64_t pad);
+    virtual ~ReflectionPAD2D();
+    virtual layerType_t getLayerType() { return LAYER_REFLECTION_PAD_2D; };
+
+    virtual dnnType* infer(dataDim_t& dim, dnnType* srcData);
+    int64_t pad;
+
 };
 
 struct box {

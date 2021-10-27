@@ -1,5 +1,6 @@
 #include<cassert>
 
+
 class FlattenConcatRT : public IPlugin {
 
 public:
