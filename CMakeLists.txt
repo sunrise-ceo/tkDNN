@@ -97,6 +97,9 @@ foreach(test_SRC ${darknet_SRC})
     target_link_libraries(${test_NAME} tkDNN)
     install(TARGETS ${test_NAME} DESTINATION bin)
 endforeach()
+#monodepth2
+add_executable(test_monodepth2 tests/monodepth2/monodepth2.cpp)
+target_link_libraries(test_monodepth2 tkDNN)
 
 # MOBILENET
 add_executable(test_mobilenetv2ssd tests/mobilenet/mobilenetv2ssd/mobilenetv2ssd.cpp)
