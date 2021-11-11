@@ -252,7 +252,8 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Layer *l) {
         return convert_layer(input, (Upsample*) l);
     if(type == LAYER_DEFORMCONV2D)
         return convert_layer(input, (DeformConv2d*) l);
-
+    if(type == LAYER_REFLECTION_PAD_2D)
+        return convert_layer(input,(ReflectionPAD2D*) l);
     std::cout<<l->getLayerName()<<"\n";
     FatalError("Layer not implemented in tensorRT");
     return NULL;
@@ -441,6 +442,11 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Activation *l) {
     else if(l->act_mode == ACTIVATION_LOGISTIC) {
         IPluginV2 *plugin = new ActivationLogisticRT();
         IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
+        checkNULL(lRT);
+        return lRT;
+    }
+    else if(l->act_mode == CUDNN_ACTIVATION_ELU){
+        IActivationLayer *lRT = networkRT->addActivation(*input,ActivationType::kELU);
         checkNULL(lRT);
         return lRT;
     }
@@ -746,6 +752,23 @@ ILayer* NetworkRT::convert_layer(ITensor *input, DeformConv2d *l) {
     checkNULL(lRT3);
 
     return lRT3;
+}
+
+ILayer* NetworkRT::convert_layer(ITensor* input,ReflectionPAD2D *l){
+    auto creator = getPluginRegistry()->getPluginCreator("ReflectionPadding2D_tkDNN","1");
+    std::vector<PluginField> mPluginAttributes;
+    PluginFieldCollection mFC{};
+    mPluginAttributes.emplace_back(PluginField("padding",&l->pad,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("input_h",&l->inputH,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("input_w",&l->inputW,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("batch",&l->batch,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("c",&l->c,PluginFieldType::kINT32,1));
+    mFC.nbFields = mPluginAttributes.size();
+    mFC.fields = mPluginAttributes.data();
+    auto *plugin = creator->createPlugin(l->getLayerName().c_str(),&mFC);
+    auto *lRT = networkRT->addPluginV2(&input, 1, *plugin);
+    checkNULL(lRT);
+    return lRT;
 }
 
 bool NetworkRT::serialize(const char *filename) {

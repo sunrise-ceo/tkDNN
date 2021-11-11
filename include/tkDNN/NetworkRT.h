@@ -23,6 +23,7 @@
 #include <pluginsRT/ShortcutRT.h>
 #include <pluginsRT/UpsampleRT.h>
 #include <pluginsRT/YoloRT.h>
+#include <pluginsRT/ReflectionPadding2DRT.h>
 
 namespace tk { namespace dnn {
 
@@ -93,7 +94,7 @@ public:
     nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input, Yolo *l);
     nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input, Upsample *l);
     nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input, DeformConv2d *l);
-
+    nvinfer1::ILayer* convert_layer(nvinfer1::ITensor *input,ReflectionPAD2D* l);
     bool serialize(const char *filename);
     bool deserialize(const char *filename);
     void destroy();

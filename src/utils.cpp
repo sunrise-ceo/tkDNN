@@ -50,8 +50,10 @@ void readBinaryFile(std::string fname, int size, dnnType** data_h, dnnType** dat
     std::stringstream error_s;
     if (!dataFile)
     {
-        error_s << "Error opening file " << fname; 
-        FatalError(error_s.str());
+
+        //error_s << "Error opening file " << fname;
+        std::cout<<"WARNING POSSIBLE BINARY FILE ISSUE"<<std::endl;
+        //FatalError(error_s.str());
     }
 
     if(seek != 0) {

@@ -23,16 +23,18 @@ LayerWgs::LayerWgs(Network *net, int inputs, int outputs,
     
     this->additional_bias = additional_bias;
     if(additional_bias) {
+        std::cout<<"READING BIAS"<<std::endl;
         readBinaryFile(weights_path.c_str(), outputs, &bias2_h, &bias2_d, seek);
         seek += outputs;   
     }
-    
+
+    std::cout<<"READING ADDITIONAL BIAS"<<std::endl;
     readBinaryFile(weights_path.c_str(), outputs, &bias_h, &bias_d, seek);
     seek += outputs;
 
     this->batchnorm = batchnorm;
     if(batchnorm) {
-        
+        std::cout<<"READING BATCHNORM"<<std::endl;
         readBinaryFile(weights_path.c_str(), outputs, &scales_h, &scales_d, seek);
         seek += outputs;
         readBinaryFile(weights_path.c_str(), outputs, &mean_h, &mean_d, seek);

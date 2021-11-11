@@ -31,7 +31,8 @@ enum layerType_t {
     LAYER_SHORTCUT,
     LAYER_UPSAMPLE,
     LAYER_REGION,
-    LAYER_YOLO
+    LAYER_YOLO,
+    LAYER_REFLECTION_PAD_2D
 };
 
 #define TKDNN_BN_MIN_EPSILON 1e-5
@@ -87,6 +88,7 @@ public:
             case LAYER_UPSAMPLE:            return "Upsample";
             case LAYER_REGION:              return "Region";
             case LAYER_YOLO:                return "Yolo";
+            case LAYER_REFLECTION_PAD_2D:   return "ReflectionPAD2D";
             default:                        return "unknown";
         }
     }
@@ -610,6 +612,18 @@ public:
     bool reverse;
     int c,h,w;
 };
+
+class ReflectionPAD2D : public Layer {
+
+public:
+    ReflectionPAD2D(Network* net, int64_t pad);
+    virtual ~ReflectionPAD2D();
+    virtual layerType_t getLayerType() { return LAYER_REFLECTION_PAD_2D; };
+
+    virtual dnnType* infer(dataDim_t& dim, dnnType* srcData);
+    int32_t pad,inputH,inputW,batch,c;
+
+        };
 
 struct box {
     int cl;
