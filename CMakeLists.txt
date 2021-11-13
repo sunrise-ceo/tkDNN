@@ -139,7 +139,7 @@ add_library(tkDNN_static STATIC ${tkdnn_SRC})
 target_link_libraries(tkDNN_static ${tkdnn_LIBS})
 
 # DARKNET: build yolo4tiny only
-add_executable(test_imuodom tests/darknet/yolo4tiny.cpp)
+add_executable(test_yolo4tiny tests/darknet/yolo4tiny.cpp)
 target_link_libraries(test_yolo4tiny tkDNN)
 
 
