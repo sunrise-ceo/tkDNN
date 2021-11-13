@@ -139,17 +139,17 @@ target_link_libraries(tkDNN ${tkdnn_LIBS} ${CUDA_CUBLAS_LIBRARIES})
 #target_link_libraries(tkDNN_static ${tkdnn_LIBS})
 
 # SMALL NETS
-add_executable(test_simple tests/simple/test_simple.cpp)
-target_link_libraries(test_simple tkDNN)
+#add_executable(test_simple tests/simple/test_simple.cpp)
+#target_link_libraries(test_simple tkDNN)
 
-add_executable(test_mnist tests/mnist/test_mnist.cpp)
-target_link_libraries(test_mnist tkDNN)
+#add_executable(test_mnist tests/mnist/test_mnist.cpp)
+#target_link_libraries(test_mnist tkDNN)
 
-add_executable(test_mnistRT tests/mnist/test_mnistRT.cpp)
-target_link_libraries(test_mnistRT tkDNN)
+#add_executable(test_mnistRT tests/mnist/test_mnistRT.cpp)
+#target_link_libraries(test_mnistRT tkDNN)
 
-add_executable(test_imuodom tests/imuodom/imuodom.cpp)
-target_link_libraries(test_imuodom tkDNN)
+#add_executable(test_imuodom tests/imuodom/imuodom.cpp)
+#target_link_libraries(test_imuodom tkDNN)
 
 # DARKNET
 file(GLOB darknet_SRC "tests/darknet/*.cpp")
@@ -162,65 +162,65 @@ foreach(test_SRC ${darknet_SRC})
 endforeach()
 
 # MOBILENET
-add_executable(test_mobilenetv2ssd tests/mobilenet/mobilenetv2ssd/mobilenetv2ssd.cpp)
-target_link_libraries(test_mobilenetv2ssd tkDNN)
+#add_executable(test_mobilenetv2ssd tests/mobilenet/mobilenetv2ssd/mobilenetv2ssd.cpp)
+#target_link_libraries(test_mobilenetv2ssd tkDNN)
 
-add_executable(test_bdd-mobilenetv2ssd tests/mobilenet/bdd-mobilenetv2ssd/bdd-mobilenetv2ssd.cpp)
-target_link_libraries(test_bdd-mobilenetv2ssd tkDNN)
+#add_executable(test_bdd-mobilenetv2ssd tests/mobilenet/bdd-mobilenetv2ssd/bdd-mobilenetv2ssd.cpp)
+#target_link_libraries(test_bdd-mobilenetv2ssd tkDNN)
 
-add_executable(test_mobilenetv2ssd512 tests/mobilenet/mobilenetv2ssd512/mobilenetv2ssd512.cpp)
-target_link_libraries(test_mobilenetv2ssd512 tkDNN)
+#add_executable(test_mobilenetv2ssd512 tests/mobilenet/mobilenetv2ssd512/mobilenetv2ssd512.cpp)
+#target_link_libraries(test_mobilenetv2ssd512 tkDNN)
 
 # BACKBONES
-add_executable(test_resnet101 tests/backbones/resnet101/resnet101.cpp)
-target_link_libraries(test_resnet101 tkDNN)
+#add_executable(test_resnet101 tests/backbones/resnet101/resnet101.cpp)
+#target_link_libraries(test_resnet101 tkDNN)
 
-add_executable(test_dla34 tests/backbones/dla34/dla34.cpp)
-target_link_libraries(test_dla34 tkDNN)
+#add_executable(test_dla34 tests/backbones/dla34/dla34.cpp)
+#target_link_libraries(test_dla34 tkDNN)
 
 # CENTERNET
-add_executable(test_resnet101_cnet tests/centernet/resnet101_cnet/resnet101_cnet.cpp)
-target_link_libraries(test_resnet101_cnet tkDNN)
+#add_executable(test_resnet101_cnet tests/centernet/resnet101_cnet/resnet101_cnet.cpp)
+#target_link_libraries(test_resnet101_cnet tkDNN)
 
-add_executable(test_dla34_cnet tests/centernet/dla34_cnet/dla34_cnet.cpp)
-target_link_libraries(test_dla34_cnet tkDNN)
+#add_executable(test_dla34_cnet tests/centernet/dla34_cnet/dla34_cnet.cpp)
+#target_link_libraries(test_dla34_cnet tkDNN)
 
-add_executable(test_dla34_cnet3d tests/centernet/dla34_cnet3d/dla34_cnet3d.cpp)
-target_link_libraries(test_dla34_cnet3d tkDNN)
+#add_executable(test_dla34_cnet3d tests/centernet/dla34_cnet3d/dla34_cnet3d.cpp)
+#target_link_libraries(test_dla34_cnet3d tkDNN)
 
 # CENTERTRACK
 
-add_executable(test_dla34_ctrack tests/centertrack/dla34_ctrack/dla34_ctrack.cpp)
-target_link_libraries(test_dla34_ctrack tkDNN)
+#add_executable(test_dla34_ctrack tests/centertrack/dla34_ctrack/dla34_ctrack.cpp)
+#target_link_libraries(test_dla34_ctrack tkDNN)
 
 # SHELFNET
-add_executable(test_shelfnet tests/shelfnet/shelfnet.cpp)
-target_link_libraries(test_shelfnet tkDNN)
+#add_executable(test_shelfnet tests/shelfnet/shelfnet.cpp)
+#target_link_libraries(test_shelfnet tkDNN)
 
-add_executable(test_shelfnet_berkeley tests/shelfnet/shelfnet_berkeley.cpp)
-target_link_libraries(test_shelfnet_berkeley tkDNN)
+#add_executable(test_shelfnet_berkeley tests/shelfnet/shelfnet_berkeley.cpp)
+#target_link_libraries(test_shelfnet_berkeley tkDNN)
 
-add_executable(test_shelfnet_mapillary tests/shelfnet/shelfnet_mapillary.cpp)
-target_link_libraries(test_shelfnet_mapillary tkDNN)
+#add_executable(test_shelfnet_mapillary tests/shelfnet/shelfnet_mapillary.cpp)
+#target_link_libraries(test_shelfnet_mapillary tkDNN)
 
 # DEMOS
-add_executable(test_rtinference tests/test_rtinference/rtinference.cpp)
-target_link_libraries(test_rtinference tkDNN)
+#add_executable(test_rtinference tests/test_rtinference/rtinference.cpp)
+#target_link_libraries(test_rtinference tkDNN)
 
-add_executable(map_demo demo/demo/map.cpp)
-target_link_libraries(map_demo tkDNN)
+#add_executable(map_demo demo/demo/map.cpp)
+#target_link_libraries(map_demo tkDNN)
 
-add_executable(demo demo/demo/demo.cpp)
-target_link_libraries(demo tkDNN)
+#add_executable(demo demo/demo/demo.cpp)
+#target_link_libraries(demo tkDNN)
 
-add_executable(demo3D demo/demo/demo3D.cpp)
-target_link_libraries(demo3D tkDNN)
+#add_executable(demo3D demo/demo/demo3D.cpp)
+#target_link_libraries(demo3D tkDNN)
 
-add_executable(demoTracker demo/demo/demoTracker.cpp)
-target_link_libraries(demoTracker tkDNN)
+#add_executable(demoTracker demo/demo/demoTracker.cpp)
+#target_link_libraries(demoTracker tkDNN)
 
-add_executable(seg_demo demo/demo/seg_demo.cpp)
-target_link_libraries(seg_demo tkDNN)
+#add_executable(seg_demo demo/demo/seg_demo.cpp)
+#target_link_libraries(seg_demo tkDNN)
 
 #-------------------------------------------------------------------------------
 # Install
