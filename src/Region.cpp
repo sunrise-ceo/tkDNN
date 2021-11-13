@@ -11,11 +11,22 @@
 
 namespace tk { namespace dnn {
 
-Region::Region(Network *net, int classes, int coords, int num) : 
+Region::Region(Network *net, int classes, int coords, int num, std::string fname_weights) : 
     Layer(net) {    
     this->classes = classes;
     this->coords = coords;
     this->num = num;
+    
+    //load anchors
+    readBinaryFile(fname_weights, 2*num, &bias_h, &bias_d);
+    for (int i = 0; i < num*2; i++) printf("%f\n", bias_h[i]);
+    
+    // init default classes name
+    classesNames.clear();
+    for (int i=0; i < classes; i++) {
+        classesNames.push_back(std::to_string(i));
+    }
+    
     // same
     output_dim.n = input_dim.n;
     output_dim.c = input_dim.c;
@@ -64,7 +75,7 @@ dnnType* Region::infer(dataDim_t &dim, dnnType* srcData) {
 
 /* Interpret class */
 RegionInterpret::RegionInterpret(dataDim_t input_dim, dataDim_t output_dim, 
-    int classes, int coords, int num, float thresh, std::string fname_weights) {
+    int classes, int coords, int num, float thresh, dnnType* biases) {
 
     this->input_dim = input_dim;
     this->output_dim = output_dim;
@@ -78,11 +89,10 @@ RegionInterpret::RegionInterpret(dataDim_t input_dim, dataDim_t output_dim,
     int tot = output_dim.w*output_dim.h*num;
     boxes = (box*)    malloc(tot*sizeof(box));
     probs = (float**) malloc(tot*sizeof(float *));
+    bias_h = biases;
+    
     for(int j = 0; j < tot; ++j) probs[j] = (float*) malloc((classes + 1)*sizeof(float *));
     s = (sortable_bbox*) malloc(tot*sizeof(sortable_bbox));
-
-    //load anchors
-    readBinaryFile(fname_weights, 2*num, &bias_h, &bias_d);
 }
 
 RegionInterpret::~RegionInterpret() {
@@ -107,7 +117,7 @@ box RegionInterpret::get_region_box(float *x, float *biases, int n, int index, i
     return b;
 }
 
-void RegionInterpret::get_region_boxes(  float *input, int w, int h, int netw, int neth, float thresh, 
+void RegionInterpret::get_region_boxes(float *input, int w, int h, int netw, int neth, float thresh, 
                                 float **probs, box *boxes, int only_objectness, 
                                 int *map, float tree_thresh, int relative) {
     int lh = output_dim.h;
@@ -128,7 +138,9 @@ void RegionInterpret::get_region_boxes(  float *input, int w, int h, int netw, i
             int box_index  = entry_index(0, n*lw*lh + i, 0, 
                                          coords, classes, output_dim, output_dim);
             float scale = predictions[obj_index];
-            boxes[index] = get_region_box(predictions, bias_h, n, box_index, col, row, lw, lh, lw*lh);
+            
+            box b = get_region_box(predictions, bias_h, n, box_index, col, row, lw, lh, lw*lh);
+            boxes[index] = b;
 
             float max = 0;
             for(int j = 0; j < classes; ++j){
