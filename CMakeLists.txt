@@ -135,8 +135,13 @@ add_library(tkDNN SHARED ${tkdnn_SRC})
 target_link_libraries(tkDNN ${tkdnn_LIBS} ${CUDA_CUBLAS_LIBRARIES})
 
 #static 
-#add_library(tkDNN_static STATIC ${tkdnn_SRC})
-#target_link_libraries(tkDNN_static ${tkdnn_LIBS})
+add_library(tkDNN_static STATIC ${tkdnn_SRC})
+target_link_libraries(tkDNN_static ${tkdnn_LIBS})
+
+# DARKNET: build yolo4tiny only
+add_executable(test_imuodom tests/darknet/yolo4tiny.cpp)
+target_link_libraries(test_yolo4tiny tkDNN)
+
 
 # SMALL NETS
 #add_executable(test_simple tests/simple/test_simple.cpp)
@@ -152,14 +157,14 @@ target_link_libraries(tkDNN ${tkdnn_LIBS} ${CUDA_CUBLAS_LIBRARIES})
 #target_link_libraries(test_imuodom tkDNN)
 
 # DARKNET
-file(GLOB darknet_SRC "tests/darknet/*.cpp")
-foreach(test_SRC ${darknet_SRC})
-    get_filename_component(test_NAME "${test_SRC}" NAME_WE)
-    set(test_NAME test_${test_NAME})
-    add_executable(${test_NAME} ${test_SRC})
-    target_link_libraries(${test_NAME} tkDNN)
-    install(TARGETS ${test_NAME} DESTINATION bin)
-endforeach()
+#file(GLOB darknet_SRC "tests/darknet/*.cpp")
+#foreach(test_SRC ${darknet_SRC})
+#    get_filename_component(test_NAME "${test_SRC}" NAME_WE)
+#    set(test_NAME test_${test_NAME})
+#    add_executable(${test_NAME} ${test_SRC})
+#    target_link_libraries(${test_NAME} tkDNN)
+#    install(TARGETS ${test_NAME} DESTINATION bin)
+#endforeach()
 
 # MOBILENET
 #add_executable(test_mobilenetv2ssd tests/mobilenet/mobilenetv2ssd/mobilenetv2ssd.cpp)
