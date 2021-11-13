@@ -687,12 +687,14 @@ public:
 class Region : public Layer {
 
 public:
-    Region(Network *net, int classes, int coords, int num);
+    Region(Network *net, int classes, int coords, int num, std::string fname_weights);
     virtual ~Region();
     virtual layerType_t getLayerType() { return LAYER_REGION; };
 
     int classes, coords, num;
     int c,h,w;
+    dnnType *bias_h, *bias_d; //anchors
+    std::vector<std::string> classNames;
     
     virtual dnnType* infer(dataDim_t &dim, dnnType* srcData);
 };
@@ -701,7 +703,7 @@ class RegionInterpret {
 
 public:
     RegionInterpret(dataDim_t input_dim, dataDim_t output_dim, 
-                    int classes, int coords, int num, float thresh, std::string fname_weights);
+                    int classes, int coords, int num, float thresh, dnnType* biases);
     ~RegionInterpret();
 
     dataDim_t input_dim, output_dim;
