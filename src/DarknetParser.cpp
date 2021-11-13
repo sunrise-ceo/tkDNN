@@ -176,7 +176,12 @@ namespace tk { namespace dnn {
             netLayers.push_back(new tk::dnn::Reorg(net, f.stride_x));
 
         } else if(f.type == "region") {
-            netLayers.push_back(new tk::dnn::Region(net, f.classes, f.coords, f.num));
+            std::string wgs = wgs_path + "/g" + std::to_string(netLayers.size()) + ".bin";
+            tk::dnn::Region *l = new tk::dnn::Region(net, f.classes, f.coords, f.num, wgs);
+            if(names.size() != f.classes)
+                FatalError("Mismatch between number of classes and names");
+            l->classesNames = names;
+            netLayers.push_back(l);
 
         } else if(f.type == "yolo") {
             std::string wgs = wgs_path + "/g" + std::to_string(netLayers.size()) + ".bin";
