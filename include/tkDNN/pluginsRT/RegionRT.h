@@ -69,7 +69,11 @@ namespace nvinfer1 {
         IPluginV2Ext *clone() const NOEXCEPT override ;
         int c, h, w;
         int classes, coords, num;
-
+        
+        // added class names and YoloV2 anchors' coords
+        std::vector<std::string> classNames;
+        dnnType* bias;
+        
         int entry_index(int batch, int location, int entry) {
             int n = location / (w * h);
             int loc = location % (w * h);
