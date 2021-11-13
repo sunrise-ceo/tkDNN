@@ -22,9 +22,9 @@ Region::Region(Network *net, int classes, int coords, int num, std::string fname
     for (int i = 0; i < num*2; i++) printf("%f\n", bias_h[i]);
     
     // init default classes name
-    classesNames.clear();
+    classNames.clear();
     for (int i=0; i < classes; i++) {
-        classesNames.push_back(std::to_string(i));
+        classNames.push_back(std::to_string(i));
     }
     
     // same
