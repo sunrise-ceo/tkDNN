@@ -180,7 +180,7 @@ namespace tk { namespace dnn {
             tk::dnn::Region *l = new tk::dnn::Region(net, f.classes, f.coords, f.num, wgs);
             if(names.size() != f.classes)
                 FatalError("Mismatch between number of classes and names");
-            l->classesNames = names;
+            l->classNames = names;
             netLayers.push_back(l);
 
         } else if(f.type == "yolo") {
