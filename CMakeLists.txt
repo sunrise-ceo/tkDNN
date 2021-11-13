@@ -135,8 +135,8 @@ add_library(tkDNN SHARED ${tkdnn_SRC})
 target_link_libraries(tkDNN ${tkdnn_LIBS} ${CUDA_CUBLAS_LIBRARIES})
 
 #static 
-add_library(tkDNN_static STATIC ${tkdnn_SRC})
-target_link_libraries(tkDNN_static ${tkdnn_LIBS})
+#add_library(tkDNN_static STATIC ${tkdnn_SRC})
+#target_link_libraries(tkDNN_static ${tkdnn_LIBS})
 
 # DARKNET: build yolo4tiny only
 add_executable(test_yolo4tiny tests/darknet/yolo4tiny.cpp)
