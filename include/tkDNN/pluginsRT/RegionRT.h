@@ -10,7 +10,8 @@ namespace nvinfer1 {
     class RegionRT : public IPluginV2Ext {
 
     public:
-        RegionRT(int classes, int coords, int num, int c, int h, int w, tk::dnn::Region* regionLayer = nullptr);
+        RegionRT(int classes, int coords, int num, int c, int h, int w, 
+                 std::vector<std::string> classNames, std::vector<float> bias_vec);
 
         ~RegionRT() ;
 
