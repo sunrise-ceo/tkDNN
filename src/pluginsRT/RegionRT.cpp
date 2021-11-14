@@ -7,13 +7,20 @@ PluginFieldCollection RegionRTPluginCreator::mFC{};
 static const char* REGIONRT_PLUGIN_VERSION{"1"};
 static const char* REGIONRT_PLUGIN_NAME{"RegionRT_tkDNN"};
 
-RegionRT::RegionRT(int classes, int coords, int num,int c,int h,int w) {
+static const int REGIONRT_CLASSNAME_W = 256;
+
+
+RegionRT::RegionRT(int classes, int coords, int num, int c, int h, int w, 
+                   std::vector<std::string> classNames, std::vector<float> bias_vec) {
     this->classes = classes;
     this->coords = coords;
     this->num = num;
     this->c = c;
     this->h = h;
     this->w = w;
+    
+    this->classNames = std::move(classNames);
+    this->bias = std::move(bias_vec);    
 }
 
 RegionRT::~RegionRT() {}
@@ -26,6 +33,23 @@ RegionRT::RegionRT(const void *data, size_t length) {
     c = readBUF<int>(buf);
     h = readBUF<int>(buf);
     w = readBUF<int>(buf);
+       
+    // read anchors' coordinates
+    bias.resize(num * 2);
+    for (int i = 0; i < num*2; i++) {
+        bias[i] = readBUF<dnnType>(buf);
+    }
+    
+    // read class names
+    classNames.resize(classes);
+    for (int i = 0; i < classes; i++) {
+        char tmp[REGIONRT_CLASSNAME_W];
+        for (int j = 0; j < REGIONRT_CLASSNAME_W; j++) {
+            tmp[j] = readBUF<char>(buf);
+        }
+        classNames[i] = std::string(tmp);
+    }
+    
     assert(buf == bufCheck+length);
 }
 
@@ -89,16 +113,16 @@ int32_t RegionRT::enqueue(int32_t batchSize, const void *const *inputs, void **o
 
     //softmax start
     int index = entry_index(0, 0, coords + 1);
-    softmaxForward(	srcData + index, classes, batchSize*num,
-                       (c*h*w)/num,
-                       w*h, 1, w*h, 1, dstData + index, stream);
+    softmaxForward(srcData + index, classes, batchSize*num,
+                   (c*h*w)/num,
+                   w*h, 1, w*h, 1, dstData + index, stream);
 
     return 0;
 }
 #endif
 
 size_t RegionRT::getSerializationSize() const NOEXCEPT {
-    return 6*sizeof(int);
+    return 6*sizeof(int) + num*2*sizeof(dnnType) + REGIONRT_CLASSNAME_W*classes*sizeof(char);
 }
 
 void RegionRT::serialize(void *buffer) const NOEXCEPT {
@@ -109,6 +133,21 @@ void RegionRT::serialize(void *buffer) const NOEXCEPT {
     writeBUF(buf, c);
     writeBUF(buf, h);
     writeBUF(buf, w);
+    
+    // serialize anchors' coordinates
+    for (int i = 0; i < 2*num; i++) {
+        tk::dnn::writeBUF(buf, bias[i]);
+    }
+
+    // save class names
+    for(int i = 0; i < classes; i++) {
+        char tmp[REGIONRT_CLASSNAME_W];
+        strcpy(tmp, classNames[i].c_str());
+        for(int j = 0; j < REGIONRT_CLASSNAME_W; j++) {
+            tk::dnn::writeBUF(buf, tmp[j]);
+        }
+    }
+    
     assert(buf == a + getSerializationSize());
 }
 
@@ -135,7 +174,7 @@ bool RegionRT::supportsFormat(DataType type, PluginFormat format) const NOEXCEPT
 }
 
 IPluginV2Ext *RegionRT::clone() const NOEXCEPT {
-    auto *p = new RegionRT(classes,coords,num,c,h,w);
+    auto *p = new RegionRT(classes, coords, num, c, h, w, classNames, bias);
     p->setPluginNamespace(mPluginNamespace.c_str());
     return p;
 }
@@ -183,7 +222,7 @@ const char *RegionRTPluginCreator::getPluginNamespace() const NOEXCEPT {
 }
 
 IPluginV2Ext *RegionRTPluginCreator::deserializePlugin(const char *name, const void *serialData, size_t serialLength) NOEXCEPT {
-    auto *pluginObj = new RegionRT(serialData,serialLength);
+    auto *pluginObj = new RegionRT(serialData, serialLength);
     pluginObj->setPluginNamespace(mPluginNamespace.c_str());
     return pluginObj;
 }
@@ -191,7 +230,7 @@ IPluginV2Ext *RegionRTPluginCreator::deserializePlugin(const char *name, const v
 IPluginV2Ext *RegionRTPluginCreator::createPlugin(const char *name, const PluginFieldCollection *fc) NOEXCEPT {
     const PluginField *fields = fc->fields;
     assert(fc->nbFields == 6);
-    for(int i=0;i<6;i++){
+    for (int i = 0; i < 6; i++){
         assert(fields[i].type == PluginFieldType::kINT32);
     }
     int classes = *(static_cast<const int*>(fields[0].data));
@@ -200,7 +239,13 @@ IPluginV2Ext *RegionRTPluginCreator::createPlugin(const char *name, const Plugin
     int c = *(static_cast<const int*>(fields[3].data));
     int h = *(static_cast<const int*>(fields[4].data));
     int w = *(static_cast<const int*>(fields[5].data));
-    auto *pluginObj = new RegionRT(classes,coords,num,c,h,w);
+    
+    std::vector<std::string> classNames(static_cast<const std::string *>(fields[6].data), 
+                                        static_cast<const std::string *>(fields[6].data) + fields[6].length);
+    std::vector<dnnType> bias_vec(static_cast<const dnnType*>(fields[7].data), 
+                                  static_cast<const dnnType*>(fields[7].data) + fields[7].length);
+    
+    auto *pluginObj = new RegionRT(classes, coords, num, c, h, w, classNames, bias_vec);
     pluginObj->setPluginNamespace(mPluginNamespace.c_str());
     return pluginObj;
 }
