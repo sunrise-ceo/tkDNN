@@ -72,7 +72,7 @@ namespace nvinfer1 {
         
         // added class names and YoloV2 anchors' coords
         std::vector<std::string> classNames;
-        dnnType* bias;
+        std::vector<dnnType> bias;
         
         int entry_index(int batch, int location, int entry) {
             int n = location / (w * h);
