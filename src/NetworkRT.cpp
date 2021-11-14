@@ -553,18 +553,22 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Region *l) {
     //std::cout<<"convert Region\n";
 
     //std::cout<<"New plugin REGION\n";
+    std::vector<dnnType> bias_h(l->bias_h, l->bias_h + sizeof(dnnType)*l->num*2);
+
     auto creator = getPluginRegistry()->getPluginCreator("RegionRT_tkDNN","1");
     std::vector<PluginField> mPluginAttributes;
     PluginFieldCollection mFC{};
-    mPluginAttributes.emplace_back(PluginField("classes",&l->classes,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("coords",&l->coords,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("nums",&l->num,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("c",&l->input_dim.c,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("h",&l->input_dim.h,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("w",&l->input_dim.w,PluginFieldType::kINT32,1));
+    mPluginAttributes.emplace_back(PluginField("classes", &l->classes, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("coords", &l->coords, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("nums", &l->num, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("c", &l->input_dim.c, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("h", &l->input_dim.h, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("w", &l->input_dim.w, PluginFieldType::kINT32, 1));
+    mPluginAttributes.emplace_back(PluginField("classNames", &l->classNames[0], PluginFieldType::kUNKNOWN, l->classNames.size()));
+    mPluginAttributes.emplace_back(PluginField("bias_vec", &bias_h[0], PluginFieldType::kFLOAT32, bias_h.size()));
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
-    auto *plugin = creator->createPlugin(l->getLayerName().c_str(),&mFC);
+    auto *plugin = creator->createPlugin(l->getLayerName().c_str(), &mFC);
     auto *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
