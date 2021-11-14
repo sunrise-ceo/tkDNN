@@ -136,15 +136,15 @@ void RegionRT::serialize(void *buffer) const NOEXCEPT {
     
     // serialize anchors' coordinates
     for (int i = 0; i < 2*num; i++) {
-        tk::dnn::writeBUF(buf, bias[i]);
+        writeBUF(buf, bias[i]);
     }
 
     // save class names
-    for(int i = 0; i < classes; i++) {
+    for (int i = 0; i < classes; i++) {
         char tmp[REGIONRT_CLASSNAME_W];
         strcpy(tmp, classNames[i].c_str());
-        for(int j = 0; j < REGIONRT_CLASSNAME_W; j++) {
-            tk::dnn::writeBUF(buf, tmp[j]);
+        for (int j = 0; j < REGIONRT_CLASSNAME_W; j++) {
+            writeBUF(buf, tmp[j]);
         }
     }
     
