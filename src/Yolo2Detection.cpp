@@ -4,20 +4,36 @@
 namespace tk { namespace dnn {
 
 
-bool Yolo2Detection::init(const std::string& tensor_path, const int n_classes, 
-                          const int n_batches, const float conf_thresh) {
+bool Yolo2Detection::init(const std::string& tensor_path, const std::string& cfg_path, const std::string& names_path,
+                          const int n_classes, const int n_batches, const float conf_thresh) {
     
     //convert network to tensorRT
     std::cout<<(tensor_path).c_str()<<"\n";
     netRT = new tk::dnn::NetworkRT(NULL, (tensor_path).c_str());
+    
+    // find Region layer's line number in Darknet .cfg file 
+    int regionLineNo = noRegionLine(const std::string &cfg_file);
+  
+    // read Region layer parameters from Darknet .cfg file 
+    std::vector<float> anchorsTemp;
+    int classesTemp, coordsTemp, numTemp;  
+    loadYoloInfo(cfg_path, regionLineNo, 
+                 std::null_ptr, //std::vector<float>& mask
+                 anchorsTemp, 
+                 numTemp, 
+                 classesTemp, 
+                 std::null_ptr, //float &nms_thresh
+                 std::null_ptr, //int &nms_kind
+                 coordsTemp);
 
-    //RegionRT* regionRT = netRT->pluginFactory->region;
+    classes = classesTemp;
+    coords = coordsTemp;
+    num = numTemp;
+    bias_h = new dnnType[num*2]; 
+    memcpy(bias_h, anchorsTemp.data(), sizeof(dnnType)*num*2);
     
-    classes = 0; //regionRT->classes;
-    coords = 0; //regionRT->coords;
-    num = 0; //regionRT->num;
-    bias_h = new dnnType[num*2]; //memcpy(bias_h, regionRT->bias, sizeof(dnnType)*num*2);
-    
+    classNames = darknetReadNames(names_path);  
+  
     nBatches = n_batches;
     confThreshold = conf_thresh;
     idim = netRT->input_dim;    
