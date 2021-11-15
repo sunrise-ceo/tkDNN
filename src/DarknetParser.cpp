@@ -307,6 +307,48 @@ namespace tk { namespace dnn {
         return lineNo;
     }
     
+    void loadRegionInfo(const std::string &cfg_file, int lineNo, std::vector<float> &anchors, int &num, int &classes, int &coords) {
+        std::vector<float> anchorsTemp;
+        int classesTemp, numTemp;
+        int coordsTemp = 0;
+
+        std::ifstream if_cfg(cfg_file);
+        if(!if_cfg.is_open())
+            FatalError("cloud not open cfg file: " + cfg_file);
+        std::string line;
+        int count = 0;
+        while(std::getline(if_cfg,line)){
+            std::string name, value;
+            std::size_t found = line.find("#");
+            if ( found != std::string::npos ) {
+                line = line.substr(0, found);
+            }
+            // skip empty lines
+            if(line.empty())
+                continue;
+            if(count > lineNo && count <=lineNo+30){
+                    divideNameAndValue(line, name, value);
+                    if(name == "anchors "){
+                        anchorsTemp = fromStringToFloatVec(value, ',');
+                    }
+                    if(name == "classes"){
+                        classesTemp = std::stoi(value);
+                    }
+                    if(name == "num"){
+                        numTemp = std::stoi(value);
+                    }
+                    if(name == "coords"){
+                        new_coordsTemp = std::stoi(value);
+                    }
+            }
+            count++;
+        }
+        anchors = anchorsTemp;
+        num = numTemp;
+        coords = coordsTemp;
+        classes = classesTemp;
+    }
+    
     std::vector<int> noYolosLine(const std::string &cfg_file){
         std::ifstream if_cfg(cfg_file);
         if(!if_cfg.is_open())
@@ -391,8 +433,8 @@ namespace tk { namespace dnn {
         nms_thresh = nmsThreshTemp;
         coords = new_coordsTemp;
         classes = classesTemp;
-
     }
+    
     void loadYoloInitInfo(int &channels,int &width,int &height,const std::string &cfg_file){
         std::ifstream if_cfg(cfg_file);
         if(!if_cfg.is_open())
