@@ -12,18 +12,18 @@ bool Yolo2Detection::init(const std::string& tensor_path, const std::string& cfg
     netRT = new tk::dnn::NetworkRT(NULL, (tensor_path).c_str());
     
     // find Region layer's line number in Darknet .cfg file 
-    int regionLineNo = noRegionLine(const std::string &cfg_file);
+    int regionLineNo = noRegionLine(cfg_path);
   
     // read Region layer parameters from Darknet .cfg file 
     std::vector<float> anchorsTemp;
     int classesTemp, coordsTemp, numTemp;  
     loadYoloInfo(cfg_path, regionLineNo, 
-                 std::null_ptr, //std::vector<float>& mask
+                 std::nullptr, //std::vector<float>& mask
                  anchorsTemp, 
                  numTemp, 
                  classesTemp, 
-                 std::null_ptr, //float &nms_thresh
-                 std::null_ptr, //int &nms_kind
+                 std::nullptr, //float &nms_thresh
+                 std::nullptr, //int &nms_kind
                  coordsTemp);
 
     classes = classesTemp;
