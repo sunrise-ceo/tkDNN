@@ -338,7 +338,7 @@ namespace tk { namespace dnn {
                         numTemp = std::stoi(value);
                     }
                     if(name == "coords"){
-                        new_coordsTemp = std::stoi(value);
+                        coordsTemp = std::stoi(value);
                     }
             }
             count++;
