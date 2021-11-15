@@ -283,6 +283,30 @@ namespace tk { namespace dnn {
         }
         return net;
     }
+    
+    int noRegionLine(const std::string &cfg_file){
+        std::ifstream if_cfg(cfg_file);
+        if(!if_cfg.is_open())
+            FatalError("cloud not open cfg file: " + cfg_file);
+        std::string line;
+        int lineNo = -1;
+        int count = 0;
+        while(std::getline(if_cfg,line)){
+            std::size_t found = line.find("#");
+            if ( found != std::string::npos ) {
+                line = line.substr(0, found);
+            }
+            // skip empty lines
+            if(line.empty())
+                continue;
+            if(line == "[region]"){
+                lineNo = count;
+            }
+            count++;
+        }
+        return lineNo;
+    }
+    
     std::vector<int> noYolosLine(const std::string &cfg_file){
         std::ifstream if_cfg(cfg_file);
         if(!if_cfg.is_open())
@@ -300,13 +324,12 @@ namespace tk { namespace dnn {
                 continue;
             if(line == "[yolo]"){
                 lineNo.push_back(count);
-
-
             }
             count++;
         }
         return lineNo;
     }
+    
     void loadYoloInfo(const std::string &cfg_file,int lineNo,std::vector<float> &mask,std::vector<float> &anchors,int &num,int &classes,float &nms_thresh,int &nms_kind,int &coords){
         std::vector<float> maskTemp,anchorsTemp;
         int classesTemp,numTemp,nmsKindTemp;
