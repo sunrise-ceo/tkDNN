@@ -50,6 +50,8 @@ namespace tk { namespace dnn {
     void loadYoloInfo(const std::string &cfg_file,int lineNo,std::vector<float> &mask,std::vector<float> &anchors,int &num,int &classes,float &nms_thresh,int &nms_kind,int &coords);
     void loadYoloInitInfo(int &channels,int &width,int &height,const std::string &cfg_file);
     std::vector<int> noYolosLine(const std::string &cfg_file);
+    
+    void loadRegionInfo(const std::string &cfg_file, int lineNo, std::vector<float> &anchors, int &num, int &classes, int &coords);
     int noRegionLine(const std::string &cfg_file);
 
 }}
