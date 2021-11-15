@@ -18,12 +18,12 @@ bool Yolo2Detection::init(const std::string& tensor_path, const std::string& cfg
     std::vector<float> anchorsTemp;
     int classesTemp, coordsTemp, numTemp;  
     loadYoloInfo(cfg_path, regionLineNo, 
-                 std::nullptr, //std::vector<float>& mask
+                 nullptr, //std::vector<float>& mask
                  anchorsTemp, 
                  numTemp, 
                  classesTemp, 
-                 std::nullptr, //float &nms_thresh
-                 std::nullptr, //int &nms_kind
+                 nullptr, //float &nms_thresh
+                 nullptr, //int &nms_kind
                  coordsTemp);
 
     classes = classesTemp;
@@ -32,7 +32,7 @@ bool Yolo2Detection::init(const std::string& tensor_path, const std::string& cfg
     bias_h = new dnnType[num*2]; 
     memcpy(bias_h, anchorsTemp.data(), sizeof(dnnType)*num*2);
     
-    classNames = darknetReadNames(names_path);  
+    classesNames = darknetReadNames(names_path);  
   
     nBatches = n_batches;
     confThreshold = conf_thresh;
