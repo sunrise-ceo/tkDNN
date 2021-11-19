@@ -229,7 +229,7 @@ IPluginV2Ext *RegionRTPluginCreator::deserializePlugin(const char *name, const v
 
 IPluginV2Ext *RegionRTPluginCreator::createPlugin(const char *name, const PluginFieldCollection *fc) NOEXCEPT {
     const PluginField *fields = fc->fields;
-    assert(fc->nbFields == 6);
+    assert(fc->nbFields == 8);
     for (int i = 0; i < 6; i++){
         assert(fields[i].type == PluginFieldType::kINT32);
     }
