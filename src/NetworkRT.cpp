@@ -55,13 +55,13 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
         configRT->setMinTimingIterations(1);
         configRT->setMaxWorkspaceSize(1 << 30);
         configRT->setFlag(BuilderFlag::kDEBUG);
+
 #endif
         //input and dataType
         dataDim_t dim = net->layers[0]->input_dim;
         dtRT = DataType::kFLOAT;
 
         builderRT->setMaxBatchSize(net->maxBatchSize);
-        configRT->setMaxWorkspaceSize(1 << 30);
 
         if(net->fp16 && builderRT->platformHasFastFp16()) {
             dtRT = DataType::kHALF;
@@ -148,8 +148,10 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
         // we don't need the network any more
         //networkRT->destroy();
         std::cout<<"serialize net\n";
+        builderActive = true;
         serialize(name);
     } else {
+        builderActive = false;
         deserialize(name);
     }
 
@@ -181,7 +183,11 @@ NetworkRT::NetworkRT(Network *net, const char *name) {
     output_dim.h = oDim.d[1];
     output_dim.w = oDim.d[2];
     output_dim.print();
-	
+    if(builderActive){
+        std::cout<<"NUMBER OF LAYERS IN NETWORK : "<<networkRT->getNbLayers()<<std::endl;
+    }
+    std::cout<<"NUMBER OF LAYERS IN ENGINE : "<<engineRT->getNbLayers()<<std::endl;
+
     // create GPU buffers and a stream
     for(int i=0; i<engineRT->getNbBindings(); i++) {
         Dims dim = engineRT->getBindingDimensions(i);
@@ -386,6 +392,7 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Pooling *l) {
         auto *lRT = networkRT->addPluginV2(&input, 1, *plugin);
         checkNULL(lRT);
         return lRT;
+
     }
     else
     {
@@ -427,20 +434,25 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Activation *l) {
         return lRT;
     }
     else if(l->act_mode == CUDNN_ACTIVATION_CLIPPED_RELU) {
-        IPluginV2 *plugin = new ActivationReLUCeiling(l->ceiling);
-        IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
+        IActivationLayer *lRT = networkRT->addActivation(*input,ActivationType::kCLIP);
+        //IPluginV2 *plugin = new ActivationReLUCeiling(l->ceiling);
+        lRT->setAlpha(0);
+        lRT->setBeta(l->ceiling);
         checkNULL(lRT);
+        //IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
+        //checkNULL(lRT);
         return lRT;
     } 
     else if(l->act_mode == ACTIVATION_MISH) {
-        IPluginV2 *plugin = new ActivationMishRT();
-        IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
-        checkNULL(lRT);
-        return lRT;
+        IActivationLayer *lRT1 = networkRT->addActivation(*input, ActivationType::kSOFTPLUS);
+        lRT1->setAlpha(1);
+        lRT1->setBeta(1);
+        IActivationLayer *lRT2 = networkRT->addActivation(*lRT1->getOutput(0), ActivationType::kTANH);
+        IElementWiseLayer *lRT3 = networkRT->addElementWise(*input, *lRT2->getOutput(0), ElementWiseOperation::kPROD);
+        return lRT3;
     }
     else if(l->act_mode == ACTIVATION_LOGISTIC) {
-        IPluginV2 *plugin = new ActivationLogisticRT();
-        IPluginV2Layer *lRT = networkRT->addPluginV2(&input, 1, *plugin);
+        IActivationLayer *lRT = networkRT->addActivation(*input,ActivationType::kSIGMOID);
         checkNULL(lRT);
         return lRT;
     }
@@ -484,7 +496,7 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Route *l) {
     return lRT;
 }
 
-ILayer* NetworkRT::convert_layer(ITensor *input, Flatten *l) {
+IPluginV2Layer* NetworkRT::convert_layer(ITensor *input, Flatten *l) {
     auto creator = getPluginRegistry()->getPluginCreator("FlattenConcatRT_tkDNN","1");
     std::vector<PluginField> mPluginAttributes;
     PluginFieldCollection mFC{};
@@ -495,14 +507,13 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Flatten *l) {
     mPluginAttributes.emplace_back(PluginField("cols",&l->cols,PluginFieldType::kINT32,1));
     mFC.nbFields = mPluginAttributes.size();
     mFC.fields = mPluginAttributes.data();
-
     auto *plugin = creator->createPlugin(l->getLayerName().c_str(),&mFC);
     auto *lRT = networkRT->addPluginV2(&input, 1, *plugin);
     checkNULL(lRT);
     return lRT;
 }
 
-ILayer* NetworkRT::convert_layer(ITensor *input, Reshape *l) {
+IPluginV2Layer* NetworkRT::convert_layer(ITensor *input, Reshape *l) {
     // std::cout<<"convert Reshape\n";
     auto creator = getPluginRegistry()->getPluginCreator("ReshapeRT_tkDNN","1");
     std::vector<PluginField> mPluginAttributes;
@@ -530,7 +541,7 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Resize *l) {
     return lRT;
 }
 
-ILayer* NetworkRT::convert_layer(ITensor *input, Reorg *l) {
+IPluginV2Layer* NetworkRT::convert_layer(ITensor *input, Reorg *l) {
     //std::cout<<"convert Reorg\n";
 
     //std::cout<<"New plugin REORG\n";
@@ -549,7 +560,7 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Reorg *l) {
     return lRT;
 }
 
-ILayer* NetworkRT::convert_layer(ITensor *input, Region *l) {
+IPluginV2Layer* NetworkRT::convert_layer(ITensor *input, Region *l) {
     //std::cout<<"convert Region\n";
 
     //std::cout<<"New plugin REGION\n";
@@ -612,10 +623,8 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Shortcut *l) {
     }
 }
 
-ILayer* NetworkRT::convert_layer(ITensor *input, Yolo *l) {
+IPluginV2Layer* NetworkRT::convert_layer(ITensor *input, Yolo *l) {
 
-    std::vector<dnnType> mask_h(l->mask_h,l->mask_h+sizeof(dnnType)*l->n_masks);
-    std::vector<dnnType> bias_h(l->bias_h,l->bias_h+sizeof(dnnType)*2*l->n_masks*l->num);
     auto creator = getPluginRegistry()->getPluginCreator("YoloRT_tkDNN","1");
     std::vector<PluginField> mPluginAttributes;
     PluginFieldCollection mFC{};
@@ -624,9 +633,6 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Yolo *l) {
     mPluginAttributes.emplace_back(PluginField("c",&l->input_dim.c,PluginFieldType::kINT32,1));
     mPluginAttributes.emplace_back(PluginField("h",&l->input_dim.h,PluginFieldType::kINT32,1));
     mPluginAttributes.emplace_back(PluginField("w",&l->input_dim.w,PluginFieldType::kINT32,1));
-    mPluginAttributes.emplace_back(PluginField("classNames",&l->classesNames[0],PluginFieldType::kUNKNOWN,l->classesNames.size()));
-    mPluginAttributes.emplace_back(PluginField("mask_v",&mask_h[0],PluginFieldType::kFLOAT32,mask_h.size()));
-    mPluginAttributes.emplace_back(PluginField("bias_v",&bias_h[0],PluginFieldType::kFLOAT32,bias_h.size()));
     mPluginAttributes.emplace_back(PluginField("n_masks",&l->n_masks,PluginFieldType::kINT32,1));
     mPluginAttributes.emplace_back(PluginField("scale_xy",&l->scaleXY,PluginFieldType::kFLOAT32,1));
     mPluginAttributes.emplace_back(PluginField("nms_thresh",&l->nms_thresh,PluginFieldType::kFLOAT32,1));
@@ -640,9 +646,8 @@ ILayer* NetworkRT::convert_layer(ITensor *input, Yolo *l) {
     return lRT;
 }
 
-ILayer* NetworkRT::convert_layer(ITensor *input, Upsample *l) {
+IPluginV2Layer* NetworkRT::convert_layer(ITensor *input, Upsample *l) {
     //std::cout<<"convert Upsample\n";
-
     auto creator = getPluginRegistry()->getPluginCreator("UpSample_tkDNN","1");
     std::vector<PluginField> mPluginAttributes;
     PluginFieldCollection mFC{};
@@ -793,8 +798,10 @@ bool NetworkRT::deserialize(const char *filename) {
 
 void NetworkRT::destroy() {
     contextRT->destroy();
-    engineRT->destroy();
-    builderRT->destroy();
+    if(builderActive) {
+        engineRT->destroy();
+        builderRT->destroy();
+    }
 }
 
 }}
