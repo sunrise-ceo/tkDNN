@@ -95,7 +95,7 @@ void Yolo2Detection::preprocess(cv::Mat &frame, const int bi){
 
     
 void Yolo2Detection::postprocess(const int bi, const bool mAP) {
-    if (rt_out == nulptr) {
+    if (rt_out == nullptr) {
         rt_out = new dnnType[netRT->output_dim.tot()]; 
     }
     checkCuda(cudaMemcpy(rt_out, netRT->output, 
