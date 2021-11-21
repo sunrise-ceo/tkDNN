@@ -14,6 +14,7 @@ private:
     int coords = 0;
     dnnType* bias_h;
     tk::dnn::RegionInterpret* region_interpret;
+    dnnType* rt_out;
     cv::Mat bgr_h;
      
 public:
