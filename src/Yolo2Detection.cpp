@@ -35,6 +35,7 @@ bool Yolo2Detection::init(const std::string& tensor_path, const std::string& cfg
     region_interpret = new tk::dnn::RegionInterpret(netRT->output_dim, netRT->output_dim, 
                                                     n_classes, coords, num, 
                                                     conf_thresh, bias_h);
+    rt_out = nullptr;
 
 #ifndef OPENCV_CUDACONTRIB
     checkCuda(cudaMallocHost(&input, sizeof(dnnType)*idim.tot()));
@@ -94,8 +95,9 @@ void Yolo2Detection::preprocess(cv::Mat &frame, const int bi){
 
     
 void Yolo2Detection::postprocess(const int bi, const bool mAP) {
-    
-    dnnType* rt_out = new dnnType[netRT->output_dim.tot()]; 
+    if (rt_out == nulptr) {
+        rt_out = new dnnType[netRT->output_dim.tot()]; 
+    }
     checkCuda(cudaMemcpy(rt_out, netRT->output, 
                          netRT->output_dim.tot()*sizeof(dnnType), 
                          cudaMemcpyDeviceToHost));
